@@ -2,11 +2,21 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+from PIL import Image
 
 st.set_page_config(page_title="Yield Predictor (V1)", layout="centered")
 
-st.title("Yield Predictor")
-st.caption("Enter tree inputs → get predicted kg/tree")
+logo = Image.open("SAPPA_2025_Primary_Green (1).png")
+
+col_logo, col_title = st.columns([1, 3])
+with col_logo:
+    st.image(logo, width=120)
+with col_title:
+    st.title("Yield Predictor")
+    st.caption("Estimate nut yield per tree from simple measurements.")
+
+st.markdown("---")
+st.subheader("Tree inputs")
 
 # Load model artifact
 @st.cache_resource
@@ -58,12 +68,10 @@ if st.button("Predict"):
         z = 1.96  # ~95% interval
         lower = max(0.0, pred - z * sigma)
         upper = pred + z * sigma
-        st.success(
-            f"Predicted yield: **{pred:.2f} kg/tree** "
-            f"(approx. 95% range: {lower:.2f} – {upper:.2f} kg/tree)"
-        )
+        help_text = f"Approx. 95% range: {lower:.2f} – {upper:.2f} kg/tree"
+        st.metric("Predicted yield (kg/tree)", f"{pred:.2f}", help=help_text)
     else:
-        st.success(f"Predicted yield: **{pred:.2f} kg/tree**")
+        st.metric("Predicted yield (kg/tree)", f"{pred:.2f}")
 
-    st.write("Inputs used:")
+    st.write("Inputs used for this prediction:")
     st.dataframe(X)
